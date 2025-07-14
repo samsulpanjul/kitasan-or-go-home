@@ -4,6 +4,8 @@ import time
 
 pyautogui.useImageNotFoundException(False)
 
+CONFIDENCE=0.9
+
 def switch_window(title):
   uma = gw.getWindowsWithTitle(title)
   target_window = next((w for w in uma if w.title.strip() == "Umamusume"), None)
@@ -15,7 +17,7 @@ def switch_window(title):
     print("Window 'Umamusume' tidak ditemukan.")
 
 def click(img: str):
-  click_btn = pyautogui.locateCenterOnScreen(img, confidence=0.9, minSearchTime=5)
+  click_btn = pyautogui.locateCenterOnScreen(img, confidence=CONFIDENCE, minSearchTime=5)
   if click_btn:
     print(f"{img} CLICKED")
     pyautogui.moveTo(click_btn, duration=0.15)
@@ -31,7 +33,7 @@ def register():
   click("assets/logo.png")
   time.sleep(1)
 
-  view_btn = list(pyautogui.locateAllOnScreen("assets/view_f_btn.png", confidence=0.9))
+  view_btn = list(pyautogui.locateAllOnScreen("assets/view_f_btn.png", confidence=CONFIDENCE))
   print(f"Ditemukan {len(view_btn)} tombol:")
   for _, btn in enumerate(view_btn):
     print("VIEW BTN CLICKED")
@@ -66,7 +68,7 @@ def register():
   click("assets/ok_btn.png")
 
   for _ in range(10):
-    skip_icon_btn = pyautogui.locateCenterOnScreen("assets/skip_icon_btn.png", confidence=0.9, minSearchTime=1)
+    skip_icon_btn = pyautogui.locateCenterOnScreen("assets/skip_icon_btn.png", confidence=CONFIDENCE, minSearchTime=1)
     if skip_icon_btn:
       pyautogui.tripleClick(skip_icon_btn, interval=0.1)
       time.sleep(0.5)
@@ -86,7 +88,7 @@ def claim_mail():
     time.sleep(0.3)
 
 def select_banner():
-  current_banner = pyautogui.locateCenterOnScreen("assets/banner.png", confidence=0.9)
+  current_banner = pyautogui.locateCenterOnScreen("assets/banner.png", confidence=CONFIDENCE)
 
   pyautogui.moveTo(current_banner.x + 255, current_banner.y, duration=1.5)
   pyautogui.click()
@@ -102,7 +104,7 @@ def gacha(pulls: int = 5):
   click("assets/scout_btn.png")
 
   for _ in range(2):
-    skip_icon_btn = pyautogui.locateCenterOnScreen("assets/skip_icon_btn.png", confidence=0.9, minSearchTime=2)
+    skip_icon_btn = pyautogui.locateCenterOnScreen("assets/skip_icon_btn.png", confidence=CONFIDENCE, minSearchTime=2)
     if skip_icon_btn:
       pyautogui.tripleClick(skip_icon_btn, interval=0.1)
       time.sleep(0.2)
@@ -111,7 +113,7 @@ def gacha(pulls: int = 5):
     click("assets/scout_again_btn.png")
     click("assets/scout_btn.png")
     for _ in range(2):
-      skip_icon_btn = pyautogui.locateCenterOnScreen("assets/skip_icon_btn.png", confidence=0.9, minSearchTime=2)
+      skip_icon_btn = pyautogui.locateCenterOnScreen("assets/skip_icon_btn.png", confidence=CONFIDENCE, minSearchTime=2)
       if skip_icon_btn:
         pyautogui.tripleClick(skip_icon_btn, interval=0.1)
         time.sleep(0.2)
