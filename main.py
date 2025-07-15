@@ -1,16 +1,19 @@
 import pyautogui
 import pygetwindow as gw
 import time
+import pymsgbox as msg
 
 pyautogui.useImageNotFoundException(False)
 
-CONFIDENCE=0.9
+CONFIDENCE=0.8
+KITASAN_IMG="ss.png"
 
 def switch_window(title):
   uma = gw.getWindowsWithTitle(title)
   target_window = next((w for w in uma if w.title.strip() == "Umamusume"), None)
   if target_window:
     target_window.activate()
+    target_window.maximize()
     print("Umamusume found")
     time.sleep(0.5)
   else:
@@ -28,14 +31,39 @@ def click(img: str):
     print(f"{img} NOT FOUND")
   return
 
+def locate_all_image(image_path: str, confidence=0.9, timeout=1, tolerance=15):
+  start = time.time()
+  filtered_img = []
+
+  while time.time() - start < timeout:
+    raw_img = list(pyautogui.locateAllOnScreen(image_path, confidence=confidence))
+
+    temp_filtered = []
+    for box in raw_img:
+      is_duplicate = False
+      for existing in temp_filtered:
+        if abs(box.left - existing.left) < tolerance and abs(box.top - existing.top) < tolerance:
+          is_duplicate = True
+          break
+      if not is_duplicate:
+        temp_filtered.append(box)
+
+    if temp_filtered:
+      filtered_img = temp_filtered
+      break
+
+    time.sleep(0.2)
+
+  return filtered_img
+
 def register():
   print("\nREGISTER SECTION!\n")
   click("assets/logo.png")
   time.sleep(1)
 
-  view_btn = list(pyautogui.locateAllOnScreen("assets/view_f_btn.png", confidence=CONFIDENCE))
+  view_btn = locate_all_image("assets/view_f_btn.png")
   print(f"Ditemukan {len(view_btn)} tombol:")
-  for _, btn in enumerate(view_btn):
+  for i, btn in enumerate(view_btn):
     print("VIEW BTN CLICKED")
     pyautogui.click(btn)
     # print(f"{i+1}. {btn}")
@@ -82,18 +110,21 @@ def claim_mail():
   click("assets/mail.png")
 
   click("assets/collect_all_btn.png")
+  time.sleep(0.5)
 
   for _ in range(2):
     click("assets/close_btn.png")
     time.sleep(0.3)
 
 def select_banner():
-  current_banner = pyautogui.locateCenterOnScreen("assets/banner.png", confidence=CONFIDENCE)
+  print("\nSELECT BANNER!\n")
+  current_banner = pyautogui.locateCenterOnScreen("assets/banner.png", confidence=CONFIDENCE, minSearchTime=2)
 
-  pyautogui.moveTo(current_banner.x + 255, current_banner.y, duration=1.5)
-  pyautogui.click()
+  if current_banner:
+    pyautogui.moveTo(current_banner, duration=0.15)
+    pyautogui.click()
 
-def gacha(pulls: int = 5):
+def gacha(pulls: int = 5, kitasan_copy = 0, how_many_kitasan = 3):
   print("\nGACHA!\n")
   click("assets/gacha_menu.png")
 
@@ -109,6 +140,16 @@ def gacha(pulls: int = 5):
       pyautogui.tripleClick(skip_icon_btn, interval=0.1)
       time.sleep(0.2)
 
+  time.sleep(0.5)
+  kitasan_found = locate_all_image(KITASAN_IMG)
+  if kitasan_found:
+    kitasan_copy = kitasan_copy + len(kitasan_found)
+    print(f"Got {kitasan_copy} Kitasan Black")
+
+  if kitasan_copy >= how_many_kitasan:
+    print(f"Done, already got {kitasan_copy} Kitasan.")
+    return True
+
   for _ in range(pulls):
     click("assets/scout_again_btn.png")
     click("assets/scout_btn.png")
@@ -117,9 +158,18 @@ def gacha(pulls: int = 5):
       if skip_icon_btn:
         pyautogui.tripleClick(skip_icon_btn, interval=0.1)
         time.sleep(0.2)
+      
+      kitasan_found = locate_all_image(KITASAN_IMG)
+      if kitasan_found:
+        kitasan_copy = kitasan_copy + len(kitasan_found)
+        print(f"Got {kitasan_copy} Kitasan Black")
+    
     time.sleep(0.5)
+    if kitasan_copy >= how_many_kitasan:
+      print(f"Done, already got {kitasan_copy} Kitasan.")
+      return True
 
-  click("assets/back_btn.png")
+  # click("assets/back_btn.png")
 
   # Only happen when gacha character
   # time.sleep(1)
@@ -127,6 +177,7 @@ def gacha(pulls: int = 5):
   # click("assets/close_btn.png")
 
   time.sleep(0.5)
+  return False
 
 def delete_data():
   print("\nREROLL\n")
@@ -145,20 +196,27 @@ def delete_data():
   click("assets/close_btn.png")
 
 def main():
-  switch_window("Umamusume")
+  how_many_kitasan = msg.prompt("How many kitasan do you want?")
+  kitasan = 0
 
-  while True:
-    register()
+  if how_many_kitasan is not None:
+    switch_window("Umamusume")
+    
+    while True:
+      register()
 
-    time.sleep(1.5)
+      time.sleep(1.5)
 
-    claim_mail()
+      claim_mail()
 
-    gacha(5)
+      result = gacha(5, kitasan, int(how_many_kitasan))
 
-    delete_data()
+      if result:
+        msg.alert("Done, grats")
+        break
+      else:
+        delete_data()
 
-    time.sleep(5)
-
+        time.sleep(5)
 
 main()
