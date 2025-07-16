@@ -124,7 +124,7 @@ def select_banner():
     print("CURRENT BANNER CLICKED")
   else:
     pyautogui.moveTo(817,659, duration=0.15)
-    pyautogui.click()
+    pyautogui.tripleClick(interval=0.7)
     print("MOVE MOUSE MANUALLY USING COORD")
 
 def gacha(pulls: int = 5, kitasan_copy = 0, how_many_kitasan = 3):
@@ -197,6 +197,8 @@ def delete_data():
 
   click("assets/delete_data_btn.png")
   
+  time.sleep(0.5)
+
   click("assets/close_btn.png")
 
 def main():
